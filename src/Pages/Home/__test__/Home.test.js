@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, wait } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { FetchPhotos } from '../../Api';
-import Home from './index';
+import { FetchPhotos } from '../../../Api';
+import Home from '../index';
 
 
 const response = {
@@ -26,7 +26,7 @@ const response = {
   },
 };
 
-jest.mock('../../Api');
+jest.mock('../../../Api');
 
 test("show loader when it's fetching data, then render it using FetchPhotos", async () => {
   FetchPhotos.mockResolvedValueOnce(response);

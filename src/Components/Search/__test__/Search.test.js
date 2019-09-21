@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
-import Search from './index';
+import Search from '../index';
 
 test('Test onSearchChange function to be call', () => {
   const onSearchChange = jest.fn();
