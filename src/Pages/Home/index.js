@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import { Row, Col } from 'antd';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import Columns from 'react-columns';
 
 import Search from '../../Components/Search';
 import Filters from '../../Components/Filters';
@@ -27,64 +28,6 @@ const Home = () => {
     },
   });
   const [userAction, setUserAction] = useState('INITIAL_LOAD');
-
-  const handleFetchPhotos = () => {
-    const { filter } = data;
-    const params = { ...filter };
-    if (filter.query === '') {
-      delete params.query;
-    }
-    if (filter.per_page === '') {
-      delete params.per_page;
-    }
-
-    let api = null;
-    if (typeof params.query === 'undefined' || params.query === '') {
-      api = FetchPhotos(params);
-    } else {
-      api = FetchSearchPhotos(params);
-    }
-    api.then((response) => {
-      const { data: responseData, status, headers } = response;
-      if (status === 200) {
-        if (typeof params.query === 'undefined' || params.query === '') {
-          setData({
-            ...data,
-            total: Number(headers['x-total']),
-            lists: data.lists.concat(responseData),
-            loading: false,
-            filter: {
-              ...filter,
-              page: filter.page + 1,
-            },
-          });
-        } else {
-          setData({
-            ...data,
-            total: responseData.total,
-            lists: data.lists.concat(responseData.results),
-            loading: false,
-            filter: {
-              ...filter,
-              page: filter.page + 1,
-            },
-          });
-        }
-      }
-      if (userAction !== '') {
-        setUserAction('');
-      }
-    })
-      .catch(() => {
-        setData({
-          ...data,
-          loading: false,
-        });
-        if (userAction !== '') {
-          setUserAction('');
-        }
-      });
-  };
 
   const handleSearchChange = (e) => {
     setData({
@@ -131,6 +74,63 @@ const Home = () => {
 
   useEffect(() => {
     const { lists, loading } = data;
+    const handleFetchPhotos = () => {
+      const { filter } = data;
+      const params = { ...filter };
+      if (filter.query === '') {
+        delete params.query;
+      }
+      if (filter.per_page === '') {
+        delete params.per_page;
+      }
+
+      let api = null;
+      if (typeof params.query === 'undefined' || params.query === '') {
+        api = FetchPhotos(params);
+      } else {
+        api = FetchSearchPhotos(params);
+      }
+      api.then((response) => {
+        const { data: responseData, status, headers } = response;
+        if (status === 200) {
+          if (typeof params.query === 'undefined' || params.query === '') {
+            setData({
+              ...data,
+              total: Number(headers['x-total']),
+              lists: data.lists.concat(responseData),
+              loading: false,
+              filter: {
+                ...filter,
+                page: filter.page + 1,
+              },
+            });
+          } else {
+            setData({
+              ...data,
+              total: responseData.total,
+              lists: data.lists.concat(responseData.results),
+              loading: false,
+              filter: {
+                ...filter,
+                page: filter.page + 1,
+              },
+            });
+          }
+        }
+        if (userAction !== '') {
+          setUserAction('');
+        }
+      })
+        .catch(() => {
+          setData({
+            ...data,
+            loading: false,
+          });
+          if (userAction !== '') {
+            setUserAction('');
+          }
+        });
+    };
     if (userAction === 'INITIAL_LOAD') {
       if (lists.length === 0) {
         handleFetchPhotos();
@@ -165,29 +165,47 @@ const Home = () => {
         </Col>
       </Row>
       <Wrapper>
-        <Row gutter={16}>
-          {
-            lists.length > 0
-              ? (
-                <InfiniteScroll
-                  dataLength={lists.length}
-                  next={handleLoadMoreList}
-                  hasMore={total !== lists.length}
-                  // loader={<Loader />}
-                  scrollThreshold={0.90}
+        {
+          lists.length > 0
+            ? (
+              <InfiniteScroll
+                dataLength={lists.length}
+                next={handleLoadMoreList}
+                hasMore={total !== lists.length}
+                scrollThreshold={0.90}
+              >
+                <Columns
+                  columns={5}
+                  gap="10px"
+                  queries={[
+                    {
+                      columns: 2,
+                      query: 'min-width: 320px',
+                    },
+                    {
+                      columns: 3,
+                      query: 'min-width: 768px',
+                    },
+                    {
+                      columns: 4,
+                      query: 'min-width: 992px',
+                    },
+                    {
+                      columns: 5,
+                      query: 'min-width: 1200px',
+                    },
+                  ]}
                 >
                   {
                     lists.map((item) => (
-                      <Col lg={6} md={12} sm={24} xs={24} key={item.id} data-testid="image_list">
-                        <ImageCard srcImage={item.urls.small} />
-                      </Col>
+                      <ImageCard srcImage={item.urls.small} key={item.id} />
                     ))
                   }
-                </InfiniteScroll>
-              )
-              : null
-          }
-        </Row>
+                </Columns>
+              </InfiniteScroll>
+            )
+            : null
+        }
         {
           loading
             ? (
