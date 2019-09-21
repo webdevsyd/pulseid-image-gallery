@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { Row, Col } from 'antd';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -14,33 +14,22 @@ import {
 
 import { FetchPhotos, FetchSearchPhotos } from '../../Api';
 
-class Home extends Component {
-  constructor() {
-    super();
-    this.state = {
-      lists: [],
-      total: 0,
-      loading: false,
-      filter: {
-        query: '',
-        page: 1,
-        per_page: 25,
-        orientation: 'landscape',
-      },
-    };
-  }
+const Home = () => {
+  const [data, setData] = useState({
+    lists: [],
+    total: 0,
+    loading: true,
+    filter: {
+      query: '',
+      page: 1,
+      per_page: 25,
+      orientation: 'landscape',
+    },
+  });
+  const [userAction, setUserAction] = useState('INITIAL_LOAD');
 
-  componentDidMount() {
-    this.handleFetchPhotos('NO_SEARCH_FILTER');
-  }
-
-  handleFetchPhotos = (action) => {
-    const { filter } = this.state;
-
-    this.setState({
-      loading: true,
-    });
-
+  const handleFetchPhotos = () => {
+    const { filter } = data;
     const params = { ...filter };
     if (filter.query === '') {
       delete params.query;
@@ -50,136 +39,169 @@ class Home extends Component {
     }
 
     let api = null;
-    if (action === 'NO_SEARCH_FILTER') {
+    if (typeof params.query === 'undefined' || params.query === '') {
       api = FetchPhotos(params);
     } else {
       api = FetchSearchPhotos(params);
     }
     api.then((response) => {
-      const { data, status, headers } = response;
+      const { data: responseData, status, headers } = response;
       if (status === 200) {
-        if (action === 'NO_SEARCH_FILTER') {
-          this.setState((previousState) => ({
+        if (typeof params.query === 'undefined' || params.query === '') {
+          setData({
+            ...data,
             total: Number(headers['x-total']),
-            lists: previousState.lists.concat(data),
+            lists: data.lists.concat(responseData),
             loading: false,
-          }));
+            filter: {
+              ...filter,
+              page: filter.page + 1,
+            },
+          });
         } else {
-          this.setState((previousState) => ({
-            total: data.total,
-            lists: previousState.lists.concat(data.results),
+          setData({
+            ...data,
+            total: responseData.total,
+            lists: data.lists.concat(responseData.results),
             loading: false,
-          }));
+            filter: {
+              ...filter,
+              page: filter.page + 1,
+            },
+          });
         }
+      }
+      if (userAction !== '') {
+        setUserAction('');
       }
     })
       .catch(() => {
-        this.setState({
+        setData({
+          ...data,
           loading: false,
         });
+        if (userAction !== '') {
+          setUserAction('');
+        }
       });
-  }
+  };
 
-  handleLoadMoreList = () => {
-    const { filter } = this.state;
-    this.setState((previousState) => ({
-      ...previousState,
+  const handleSearchChange = (e) => {
+    setData({
+      ...data,
       filter: {
-        ...previousState.filter,
-        page: previousState.filter.page + 1,
+        ...data.filter,
+        query: e.target.value,
       },
-    }), () => {
-      this.handleFetchPhotos(filter.query !== '' ? 'WITH_SEARCH_FILTER' : 'NO_SEARCH_FILTER');
     });
-  }
+  };
 
-  handleSearchChange = (e) => {
-    const { value } = e.target;
-    this.setState((previousState) => ({
-      ...previousState,
-      filter: {
-        ...previousState.filter,
-        query: value,
-      },
-    }));
-  }
+  const handleLoadMoreList = () => {
+    setData({
+      ...data,
+      loading: true,
+    });
+    setUserAction('LOAD_MORE');
+  };
 
-  handleFilterChange = (name, value) => {
-    this.setState((previousState) => ({
-      ...previousState,
+  const handleFilterChange = (name, value) => {
+    setData({
+      ...data,
       filter: {
-        ...previousState.filter,
+        ...data.filter,
         [name]: value,
       },
-    }));
-  }
-
-  handleFilterSubmit = (e) => {
-    e.preventDefault();
-
-    const { filter } = this.state;
-    this.setState({
-      total: 0,
-      lists: [],
-      loading: false,
-      page: 1,
-    }, () => {
-      this.handleFetchPhotos(filter.query !== '' ? 'WITH_SEARCH_FILTER' : 'NO_SEARCH_FILTER');
     });
-  }
+  };
 
-  render() {
-    const {
-      lists, filter, total, loading,
-    } = this.state;
-    return (
-      <>
-        <Row>
-          <Col xs={24}>
-            <SearchWrapper>
-              <Search onSearchChange={this.handleSearchChange} query={filter.query} />
-              <Filters
-                onFilterChange={this.handleFilterChange}
-                onFilterSubmit={this.handleFilterSubmit}
-                loading={loading}
-                filter={filter}
-              />
-            </SearchWrapper>
-          </Col>
-        </Row>
-        <Wrapper>
-          <Row gutter={16}>
-            <InfiniteScroll
-              dataLength={lists.length}
-              next={this.handleLoadMoreList}
-              hasMore={total !== lists.length}
-              loader={<Loader />}
-              scrollThreshold={0.30}
-            >
-              {
-              lists.map((item) => (
-                <Col lg={6} md={12} sm={24} xs={24} key={item.id} data-testid="image_list">
-                  <ImageCard srcImage={item.urls.small} />
-                </Col>
-              ))
-            }
-            </InfiniteScroll>
-          </Row>
+  const handleFilterSubmit = (e) => {
+    e.preventDefault();
+    setData({
+      ...data,
+      loading: true,
+      lists: [],
+      total: 0,
+      filter: {
+        ...data.filter,
+        page: 1,
+      },
+    });
+    setUserAction('FILTER_SUBMIT');
+  };
+
+  useEffect(() => {
+    const { lists, loading } = data;
+    if (userAction === 'INITIAL_LOAD') {
+      if (lists.length === 0) {
+        handleFetchPhotos();
+      }
+    } else if (userAction === 'LOAD_MORE') {
+      if (lists.length > 0 && loading) {
+        handleFetchPhotos();
+      }
+    } else if (userAction === 'FILTER_SUBMIT') {
+      if (lists.length === 0) {
+        handleFetchPhotos();
+      }
+    }
+  }, [data, userAction]);
+
+  const {
+    filter, lists, total, loading,
+  } = data;
+  return (
+    <>
+      <Row>
+        <Col xs={24}>
+          <SearchWrapper onSubmit={handleFilterSubmit}>
+            <Search onSearchChange={handleSearchChange} query={filter.query} />
+            <Filters
+              onFilterChange={handleFilterChange}
+              onFilterSubmit={handleFilterSubmit}
+              loading={loading}
+              filter={filter}
+            />
+          </SearchWrapper>
+        </Col>
+      </Row>
+      <Wrapper>
+        <Row gutter={16}>
           {
-            loading && lists.length === 0
+            lists.length > 0
               ? (
-                <Row gutter={16}>
-                  <Col xs={24}>
-                    <Loader />
-                  </Col>
-                </Row>
+                <InfiniteScroll
+                  dataLength={lists.length}
+                  next={handleLoadMoreList}
+                  hasMore={total !== lists.length}
+                  // loader={<Loader />}
+                  scrollThreshold={0.90}
+                >
+                  {
+                    lists.map((item) => (
+                      <Col lg={6} md={12} sm={24} xs={24} key={item.id} data-testid="image_list">
+                        <ImageCard srcImage={item.urls.small} />
+                      </Col>
+                    ))
+                  }
+                </InfiniteScroll>
               )
               : null
           }
-        </Wrapper>
-      </>
-    );
-  }
-}
+        </Row>
+        {
+          loading
+            ? (
+              <Row gutter={16}>
+                <Col xs={24}>
+                  <Loader />
+                </Col>
+              </Row>
+            )
+            : null
+        }
+      </Wrapper>
+    </>
+  );
+};
 
 export default Home;
