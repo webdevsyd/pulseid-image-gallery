@@ -85,7 +85,7 @@ const Home = () => {
       }
 
       let api = null;
-      if (typeof params.query === 'undefined' || params.query === '') {
+      if (typeof params.query === 'undefined') {
         api = FetchPhotos(params);
       } else {
         api = FetchSearchPhotos(params);
@@ -93,7 +93,7 @@ const Home = () => {
       api.then((response) => {
         const { data: responseData, status, headers } = response;
         if (status === 200) {
-          if (typeof params.query === 'undefined' || params.query === '') {
+          if (typeof params.query === 'undefined') {
             setData({
               ...data,
               total: Number(headers['x-total']),
@@ -132,7 +132,7 @@ const Home = () => {
         });
     };
     if (userAction === 'INITIAL_LOAD') {
-      if (lists.length === 0) {
+      if (lists.length === 0 && loading) {
         handleFetchPhotos();
       }
     } else if (userAction === 'LOAD_MORE') {

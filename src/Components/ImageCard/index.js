@@ -7,7 +7,7 @@ import {
 } from './styles';
 
 const ImageCard = ({ srcImage }) => (
-  <Wrapper>
+  <Wrapper data-testid="image_list">
     <Image data-testid="image" src={srcImage} width="100%" height="250" />
   </Wrapper>
 );
