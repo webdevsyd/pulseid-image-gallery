@@ -8,7 +8,7 @@ import {
 
 const ImageCard = ({ srcImage }) => (
   <Wrapper>
-    <Image src={srcImage} width="100%" height="250" />
+    <Image data-testid="image" src={srcImage} width="100%" height="250" />
   </Wrapper>
 );
 

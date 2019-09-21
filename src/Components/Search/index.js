@@ -7,6 +7,7 @@ import {
 
 const Search = ({ query, onSearchChange }) => (
   <Input
+    data-testid="search"
     onChange={onSearchChange}
     value={query}
     placeholder="Search Here..."

@@ -20,7 +20,7 @@ class Home extends Component {
     this.state = {
       lists: [],
       total: 0,
-      loading: true,
+      loading: false,
       filter: {
         query: '',
         page: 1,
@@ -157,12 +157,12 @@ class Home extends Component {
               scrollThreshold={0.30}
             >
               {
-                lists.map((item) => (
-                  <Col lg={6} md={12} sm={24} xs={24} key={item.id}>
-                    <ImageCard srcImage={item.urls.small} />
-                  </Col>
-                ))
-              }
+              lists.map((item) => (
+                <Col lg={6} md={12} sm={24} xs={24} key={item.id} data-testid="image_list">
+                  <ImageCard srcImage={item.urls.small} />
+                </Col>
+              ))
+            }
             </InfiniteScroll>
           </Row>
           {

@@ -12,6 +12,7 @@ const Filters = ({
     <Wrapper>
       <Label>Per Page:</Label>
       <Select
+        data-testid="filter_per_page"
         value={filter.per_page}
         onChange={(e) => onFilterChange('per_page', Number(e.target.value))}
       >
@@ -24,6 +25,7 @@ const Filters = ({
     <Wrapper>
       <Label>Orientation:</Label>
       <Select
+        data-testid="filter_orientation"
         value={filter.orientation}
         onChange={(e) => onFilterChange('orientation', e.target.value)}
       >
@@ -32,7 +34,13 @@ const Filters = ({
         <option value="squarish">Squarish</option>
       </Select>
     </Wrapper>
-    <FilterSubmit disabled={loading} type="submit" value="Filter" onClick={onFilterSubmit} />
+    <FilterSubmit
+      disabled={loading}
+      type="submit"
+      value="Filter"
+      data-testid="filter_submit"
+      onClick={onFilterSubmit}
+    />
   </FilterWrapper>
 );
 
