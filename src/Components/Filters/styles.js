@@ -2,14 +2,21 @@ import styled from 'styled-components';
 
 export const FilterWrapper = styled.div`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  @media only screen and (min-width : 768px) {
+    flex-direction: row;
+  }
 `;
 
 export const Wrapper = styled.div`
-  width: 33%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   margin-right: 15px;
+  margin-bottom: 8px;
+  @media only screen and (min-width : 768px) {
+    width: 33%;
+  }
 `;
 
 export const Label = styled.label`
@@ -22,8 +29,13 @@ export const Label = styled.label`
 export const Select = styled.select`
   height: 40px;
   font-size: 18px;
-  border-radius: 12px;
+  border-radius: 8px;
   outline: none;
+  width: 100%;
+  padding: 0 15px;
+  @media only screen and (min-width : 768px) {
+    width: auto;
+  }
 `;
 
 
@@ -31,7 +43,7 @@ export const FilterSubmit = styled.input`
   background-color: #ffab00;
   border: none;
   border-radius: 8px;
-  width: 150px;
+  width: 100%;
   height: 40px;
   margin-top: 30px;
   color: #FFF;
@@ -41,5 +53,8 @@ export const FilterSubmit = styled.input`
   &:disabled {
     background-color: #ccc;
     cursor: not-allowed;
+  }
+  @media only screen and (min-width : 768px) {
+    width: 150px;
   }
 `;

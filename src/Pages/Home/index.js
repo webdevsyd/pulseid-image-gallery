@@ -198,7 +198,11 @@ const Home = () => {
                 >
                   {
                     lists.map((item) => (
-                      <ImageCard srcImage={item.urls.small} key={item.id} />
+                      <ImageCard
+                        key={item.id}
+                        srcImage={item.urls.small}
+                        user={item.user}
+                      />
                     ))
                   }
                 </Columns>
